@@ -1,0 +1,22 @@
+@let pages = pages$ | async;
+@if (pages) {
+    <div
+      (appVisiblePage)="changeActivePageId($event)"
+      [appScrollIntoPage]="activePageId"
+      class="documents"
+    >
+      @for (item of pages; track item.number) {
+        <div [attr.page-id]="item.number" class="document">
+          <img alt="{{ item.number }}" src="/mock/{{ item.imageUrl }}"/>
+        </div>
+      } @empty {
+        <div class="documents--empty">
+          Нет данных.
+        </div>
+      }
+    </div>
+} @else {
+  <div class="loader">
+    загрузка...
+  </div>
+}
