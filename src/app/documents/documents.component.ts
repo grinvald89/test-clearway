@@ -1,12 +1,14 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 
 import { DocumentsService } from './documents.service';
-import { IDocuments, IPage } from './model';
+import { ImageLoadStatusesService } from './image-load-statuses.service';
+import { IDocuments, IPage, IPageView } from './model';
 import { ScrollIntoPageDirective } from './scroll-into-page.directive';
 import { VisiblePageDirective } from './visible-page.directive';
+import { ScaleHeightDirective } from './scale-height.directive';
 
 @Component({
   selector: 'app-documents',
@@ -19,18 +21,29 @@ import { VisiblePageDirective } from './visible-page.directive';
     RouterModule,
     ScrollIntoPageDirective,
     VisiblePageDirective,
+    ScaleHeightDirective,
   ],
-  providers: [DocumentsService],
+  providers: [
+    DocumentsService,
+    ImageLoadStatusesService,
+  ],
 })
 export class DocumentsComponent implements AfterViewInit {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly documentsService = inject(DocumentsService);
+  private readonly images = inject(ImageLoadStatusesService);
   private readonly router = inject(Router);
 
   public activePageId!: string;
 
-  public pages$: Observable<IPage[]> = this.documentsService.getDocuments().pipe(
-    map((response: IDocuments): IPage[] => response.pages));
+  public pages$: Observable<IPageView[]> = this.documentsService.getDocuments().pipe(
+    tap(() => requestAnimationFrame(() => this.images.updateStatuses())),
+    map((response: IDocuments): IPageView[] => {
+      return response.pages.map((item: IPage): IPageView => ({
+        ...item,
+        scale: 1,
+      }));
+    }));
 
   public ngAfterViewInit(): void {
     this.activePageId = this.activatedRoute.snapshot.queryParamMap.get('id') ?? '';
@@ -51,5 +64,13 @@ export class DocumentsComponent implements AfterViewInit {
         queryParamsHandling: 'merge',
       }
     );
+  }
+
+  public zoomIn(document: IPageView): void {
+    document.scale += 0.1;
+  }
+
+  public zoomOut(document: IPageView): void {
+    document.scale -= 0.1;
   }
 }

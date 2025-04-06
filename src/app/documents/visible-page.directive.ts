@@ -1,6 +1,8 @@
 import { Directive, ElementRef, EventEmitter, inject, Output } from '@angular/core';
+import { first } from 'rxjs';
 
 import { PAGE_ID_ATTRIBUTE, PAGE_SELECTOR } from './constants';
+import { ImageLoadStatusesService } from './image-load-statuses.service';
 
 @Directive({
   selector: '[appVisiblePage]',
@@ -11,9 +13,14 @@ export class VisiblePageDirective {
   public appVisiblePage: EventEmitter<string> = new EventEmitter<string>();
 
   private readonly element = inject(ElementRef);
+  private readonly images = inject(ImageLoadStatusesService);
 
   public ngAfterViewInit(): void {
-    this.element.nativeElement.addEventListener('scroll', (event: any) => this.scrollHandler());
+    this.images.loaded$
+      .pipe(first())
+      .subscribe((): void => {
+        this.element.nativeElement.addEventListener('scroll', (event: any) => this.scrollHandler());
+      });
   }
 
   private scrollHandler(): void {

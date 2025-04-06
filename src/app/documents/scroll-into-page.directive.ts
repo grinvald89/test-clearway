@@ -1,6 +1,8 @@
 import { AfterViewInit, Directive, ElementRef, inject, Input } from '@angular/core';
+import { filter, first } from 'rxjs';
 
 import { PAGE_ID_ATTRIBUTE, PAGE_SELECTOR } from './constants';
+import { ImageLoadStatusesService } from './image-load-statuses.service';
 
 @Directive({
   selector: '[appScrollIntoPage]',
@@ -11,19 +13,17 @@ export class ScrollIntoPageDirective implements AfterViewInit {
   public appScrollIntoPage: string = '';
 
   private readonly element = inject(ElementRef);
+  private readonly images = inject(ImageLoadStatusesService);
 
   public ngAfterViewInit(): void {
-    Promise.all(
-      Array
-        .from(document.images)
-        .filter(img => !img.complete)
-        .map(img => new Promise(resolve => {
-          img.onload = img.onerror = resolve;
-        })))
-        .then(() => {
-          this.scrollIntoPage();
-        }
-    );
+    this.images.loaded$
+      .pipe(
+        filter((val) => val),
+        first(),
+      )
+      .subscribe((): void => {
+        this.scrollIntoPage();
+      });
   }
 
   private scrollIntoPage(): void {

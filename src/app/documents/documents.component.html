@@ -6,8 +6,21 @@
       class="documents"
     >
       @for (item of pages; track item.number) {
-        <div [attr.page-id]="item.number" class="document">
-          <img alt="{{ item.number }}" src="/mock/{{ item.imageUrl }}"/>
+        <div
+          [attr.page-id]="item.number"
+          [appScaleHeight]="item.scale"
+          class="document"
+        >
+          <img
+            alt="{{ item.number }}"
+            class="document__image"
+            src="/mock/{{ item.imageUrl }}"
+          />
+          <div class="document__zoom-controls">
+            <button (click)="zoomIn(item)"> + </button>
+            <span>{{ item.scale * 100 | number:'1.0-0' }}%</span>            
+            <button (click)="zoomOut(item)"> - </button>
+          </div>
         </div>
       } @empty {
         <div class="documents--empty">
