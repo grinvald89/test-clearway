@@ -1,33 +1,54 @@
+<app-annotation-form
+  (formValue)="createAnnotation($event)"
+  [buildFormParams]="buildAnnotationFormParams"
+></app-annotation-form>
+
 @let pages = pages$ | async;
 @if (pages) {
-    <div
-      (appVisiblePage)="changeActivePageId($event)"
-      [appScrollIntoPage]="activePageId"
-      class="documents"
-    >
-      @for (item of pages; track item.number) {
-        <div
-          [attr.page-id]="item.number"
-          [appScaleHeight]="item.scale"
-          class="document"
-        >
+  <div
+    (appVisiblePage)="changeActivePageId($event)"
+    [appScrollIntoPage]="activePageId"
+    class="documents"
+  >
+    @for (item of pages; track item.number) {
+      <div
+        [appScaleHeight]="item.scale"
+        [attr.page-id]="item.number"
+        class="document"
+      >
+        <div class="document__image-wrapper">
           <img
-            alt="{{ item.number }}"
+            (click)="openAnnotationForm($event, item)"
+            [alt]="item.number"
             class="document__image"
             src="/mock/{{ item.imageUrl }}"
           />
-          <div class="document__zoom-controls">
-            <button (click)="zoomIn(item)"> + </button>
-            <span>{{ item.scale * 100 | number:'1.0-0' }}%</span>            
-            <button (click)="zoomOut(item)"> - </button>
-          </div>
+
+          @for (annotation of item.annotations; track $index) {
+            <div
+              [style.left]="annotation.position.x + 'px'"
+              [style.top]="annotation.position.y + 'px'"
+              class="annotation"
+            >
+              <div class="comment">
+                {{ annotation.value }}
+              </div>
+            </div>
+          }
         </div>
-      } @empty {
-        <div class="documents--empty">
-          Нет данных.
+
+        <div class="document__zoom-controls">
+          <button (click)="zoomIn(item)"> + </button>
+          <span>{{ item.scale * 100 | number:'1.0-0' }}%</span>
+          <button (click)="zoomOut(item)"> - </button>
         </div>
-      }
-    </div>
+      </div>
+    } @empty {
+      <div class="documents--empty">
+        Нет данных.
+      </div>
+    }
+  </div>
 } @else {
   <div class="loader">
     загрузка...

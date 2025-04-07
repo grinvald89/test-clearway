@@ -4,6 +4,7 @@
   flex-direction: column;
   height: inherit;
   justify-content: center;
+  position: relative;
 }
 
 .documents {
@@ -33,4 +34,8 @@
       padding: 10px;
     }
   }
+}
+
+.annotation {
+  position: absolute;
 }
