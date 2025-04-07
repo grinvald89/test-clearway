@@ -16,26 +16,24 @@
         [attr.page-id]="item.number"
         class="document"
       >
-        <div class="document__image-wrapper">
-          <img
-            (click)="openAnnotationForm($event, item)"
-            [alt]="item.number"
-            class="document__image"
-            src="/mock/{{ item.imageUrl }}"
-          />
+        <img
+          (click)="openAnnotationForm($event, item)"
+          [alt]="item.number"
+          class="document__image"
+          src="/mock/{{ item.imageUrl }}"
+        />
 
-          @for (annotation of item.annotations; track $index) {
-            <div
-              [style.left]="annotation.position.x + 'px'"
-              [style.top]="annotation.position.y + 'px'"
-              class="annotation"
-            >
-              <div class="comment">
-                {{ annotation.value }}
-              </div>
+        @for (annotation of item.annotations; track $index) {
+          <div
+            [style.left]="annotation.position.x * item.scale + item.offsetLeft + 'px'"
+            [style.top]="annotation.position.y * item.scale + 'px'"
+            class="annotation"
+          >
+            <div class="comment">
+              {{ annotation.value }}
             </div>
-          }
-        </div>
+          </div>
+        }
 
         <div class="document__zoom-controls">
           <button (click)="zoomIn(item)"> + </button>

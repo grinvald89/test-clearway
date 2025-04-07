@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { afterNextRender, afterRender, AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
@@ -35,6 +35,7 @@ import { IAnnotationFormValue } from './annotation-form/annotation-form-value.in
 export class DocumentsComponent implements OnInit, AfterViewInit {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly documentsService = inject(DocumentsService);
+  private readonly element = inject(ElementRef);
   private readonly images = inject(ImageLoadStatusesService);
   private readonly router = inject(Router);
   private readonly _pages$: BehaviorSubject<IPageView[] | undefined> = new BehaviorSubject<IPageView[] | undefined>(undefined);
@@ -46,10 +47,21 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
     return this._pages$.asObservable();
   }
 
+  constructor() {
+    afterRender(() => {
+      console.log('afterRender DocumentsComponent');
+    })
+  }
+
   public ngOnInit(): void {
     this.documentsService.getDocuments()
       .pipe(
-        tap(() => requestAnimationFrame(() => this.images.updateStatuses())),
+        tap(() => {
+          setTimeout(() => {
+            this.images.updateStatuses();
+            this.updateOffsetForImages();
+          })
+        }),
       )
       .subscribe((response: IDocuments): void => {
         this._pages$.next(
@@ -57,6 +69,7 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
             ...item,
             scale: 1,
             annotations: [],
+            offsetLeft: 0,
           })),
         );
       });
@@ -85,10 +98,12 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
 
   public zoomIn(document: IPageView): void {
     document.scale += 0.1;
+    this.updateOffsetForImages();
   }
 
   public zoomOut(document: IPageView): void {
     document.scale -= 0.1;
+    this.updateOffsetForImages();
   }
 
   public openAnnotationForm(event: MouseEvent, document: IPageView) {
@@ -120,5 +135,25 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
       type: value.type,
       value: value.value,
     });
+  }
+
+  private updateOffsetForImages(): void {
+    const $images: HTMLElement[] = this.element.nativeElement.querySelectorAll('img');
+    const pages: IPageView[] = this._pages$.value ?? [];
+
+    if ($images.length !== pages.length) {
+      return;
+    }
+
+    for(const [index, $img] of $images.entries()) {
+      setTimeout(() => {
+        console.log('offsetLeft');
+        console.log($img.offsetLeft);
+
+        pages[index].offsetLeft = $img.offsetLeft;
+
+        this._pages$.next(pages);
+      });
+    }
   }
 }

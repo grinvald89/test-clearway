@@ -15,6 +15,7 @@ export interface IPage {
 
 export interface IPageView extends IPage {
   scale: number;
+  offsetLeft: number;
   annotations: IAnnotation[];
 }
 

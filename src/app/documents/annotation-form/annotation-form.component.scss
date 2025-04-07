@@ -1,0 +1,37 @@
+:host {
+  background-color: #fff;
+  border-radius: 3px;
+  border: 1px solid #000;
+  padding: 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.type {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &__label {
+    font-weight: 600;
+  }
+
+  &__controls {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  &__button {
+    cursor: pointer;
+    padding: 10px 20px;
+  }
+}

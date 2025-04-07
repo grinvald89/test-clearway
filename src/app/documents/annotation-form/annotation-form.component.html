@@ -1,0 +1,50 @@
+@if (visible) {
+  @if (!type) {
+    <div class="type">
+      <div class="type__label">Выберите тип аннотации:</div>
+      <div class="type__controls">
+        <button
+          (click)="type = 'text'"
+          class="type__button"
+        >
+          Текст
+        </button>
+
+        <button
+          (click)="type = 'icon'"
+          class="type__button"
+        >
+          Картинка
+        </button>
+      </div>
+    </div>
+  } @else {
+    <form
+      (submit)="saveForm()"
+      [formGroup]="form"
+      [style.left]="left + 'px'"
+      [style.top]="top + 'px'"
+      class="form"
+    >
+      @if (type === 'text') {
+        <input
+          formControlName="comment"
+          name="comment"
+          placeholder="Комментарий"
+          type="text"
+        />
+      } @else {
+        <input
+          accept="image/png, image/jpeg"
+          formControlName="icon"
+          name="icon"
+          type="file"
+        />
+      }
+
+      <button [disabled]="invalidForm">
+        Добавить
+      </button>
+    </form>
+  }
+}
