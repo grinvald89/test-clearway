@@ -3,14 +3,13 @@
   [buildFormParams]="buildAnnotationFormParams"
 ></app-annotation-form>
 
-@let pages = pages$ | async;
-@if (pages) {
+@if (!store.loading()) {
   <div
     (appVisiblePage)="changeActivePageId($event)"
     [appScrollIntoPage]="activePageId"
     class="documents"
   >
-    @for (item of pages; track item.number) {
+    @for (item of store.pages(); track item.number) {
       <div
         [appScaleHeight]="item.scale"
         [attr.page-id]="item.number"

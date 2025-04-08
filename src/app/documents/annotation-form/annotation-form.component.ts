@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, HostListener, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
 
 import { AnnotationType } from '../model';
@@ -40,8 +40,15 @@ export class AnnotationFormComponent {
     return this._buildFormParams?.absoluteCursorPosition.y ?? 0;
   }
 
-  @HostBinding('hidden') private get hostClass(): boolean {
+  @HostBinding('hidden') public get hostClass(): boolean {
     return !this.visible;
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  public handleKeyboardEvent(event: KeyboardEvent): void {
+      if (event.key === 'Escape') {
+        this.closeForm();
+      }
   }
   
   public form: FormGroup = new FormGroup({
@@ -79,12 +86,16 @@ export class AnnotationFormComponent {
       value: this.form.value.comment,
     });
 
-    this.form.reset();
-    this.visible = false;
+    this.closeForm();
   }
 
   private openForm(): void {
     this.type = null;
     this.visible = true;
+  }
+
+  private closeForm(): void {
+    this.form.reset();
+    this.visible = false;
   }
 }
