@@ -1,7 +1,7 @@
-import { AfterViewInit, Directive, ElementRef, inject, Input } from '@angular/core';
-import { filter, first } from 'rxjs';
+import { AfterViewInit, Directive, ElementRef, inject, Injector, Input } from '@angular/core';
+import { watchState } from '@ngrx/signals';
 
-import { ImageLoadStatusesService } from './image-load-statuses.service';
+import { DocumentsStore } from './store';
 
 @Directive({
   selector: '[appScaleHeight]',
@@ -15,10 +15,10 @@ export class ScaleHeightDirective implements AfterViewInit {
   }
 
   private readonly element = inject(ElementRef);
-  private readonly images = inject(ImageLoadStatusesService);
+  private readonly injector = inject(Injector);
+  private readonly store = inject(DocumentsStore);
 
   private _appScaleHeight: number = 0;
-  private imagesLoaded: boolean = false;
   private pageHeightOrigin: number = 0;
 
   private get $page(): HTMLInputElement {
@@ -26,20 +26,17 @@ export class ScaleHeightDirective implements AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    this.images.loaded$
-      .pipe(
-        filter((val) => val),
-        first(),
-      )
-      .subscribe((): void => {
+    const { destroy } = watchState(this.store, (state) => {
+      if (state.imagesReady) {
         this.pageHeightOrigin = this.$page.clientHeight;
-        this.imagesLoaded = true;
         this.changeHeight();
-      });
+        destroy();
+      }
+    }, { injector: this.injector });
   }
 
   private changeHeight(): void {
-    if (!this.imagesLoaded) {
+    if (!this.store.imagesReady()) {
       return;
     }
   

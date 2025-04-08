@@ -1,26 +1,34 @@
-import { Directive, ElementRef, EventEmitter, inject, Output } from '@angular/core';
-import { first } from 'rxjs';
+import { AfterViewInit, Directive, ElementRef, EventEmitter, inject, Injector, OnDestroy, Output } from '@angular/core';
+import { watchState } from '@ngrx/signals';
 
 import { PAGE_ID_ATTRIBUTE, PAGE_SELECTOR } from './constants';
-import { ImageLoadStatusesService } from './image-load-statuses.service';
+import { DocumentsStore } from './store';
 
 @Directive({
   selector: '[appVisiblePage]',
   standalone: true,
 })
-export class VisiblePageDirective {
+export class VisiblePageDirective implements AfterViewInit, OnDestroy {
   @Output()
   public appVisiblePage: EventEmitter<string> = new EventEmitter<string>();
 
   private readonly element = inject(ElementRef);
-  private readonly images = inject(ImageLoadStatusesService);
+  private readonly injector = inject(Injector);
+  private readonly store = inject(DocumentsStore);
+
+  private readonly scrollHandlerFn = (event: MouseEvent) => this.scrollHandler();
 
   public ngAfterViewInit(): void {
-    this.images.loaded$
-      .pipe(first())
-      .subscribe((): void => {
-        this.element.nativeElement.addEventListener('scroll', (event: any) => this.scrollHandler());
-      });
+    const { destroy } = watchState(this.store, (state) => {
+      if (state.imagesReady) {
+        this.element.nativeElement.addEventListener('scroll', this.scrollHandlerFn);
+        destroy();
+      }
+    }, { injector: this.injector });
+  }
+
+  public ngOnDestroy(): void {
+    this.element.nativeElement.removeEventListener('scroll', this.scrollHandlerFn);
   }
 
   private scrollHandler(): void {

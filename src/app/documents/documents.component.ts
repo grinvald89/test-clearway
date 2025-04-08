@@ -1,17 +1,17 @@
-import { afterNextRender, afterRender, AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnInit } from '@angular/core';
+import { afterNextRender, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, Injector, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { watchState } from '@ngrx/signals';
 
 import { AnnotationFormComponent } from './annotation-form';
-import { DocumentsService } from './documents.service';
-import { ImageLoadStatusesService } from './image-load-statuses.service';
-import { IDocuments, IPage, IPageView } from './model';
+import { DocumentsService } from './services/documents.service';
+import { IPageView } from './model';
 import { ScrollIntoPageDirective } from './scroll-into-page.directive';
 import { VisiblePageDirective } from './visible-page.directive';
 import { ScaleHeightDirective } from './scale-height.directive';
 import { IBuildAnnotationFormParams } from './annotation-form/build-annotation-form-params.interface';
 import { IAnnotationFormValue } from './annotation-form/annotation-form-value.interface';
+import { DocumentsStore } from './store';
 
 @Component({
   selector: 'app-documents',
@@ -29,50 +29,46 @@ import { IAnnotationFormValue } from './annotation-form/annotation-form-value.in
   ],
   providers: [
     DocumentsService,
-    ImageLoadStatusesService,
+    DocumentsStore,
   ],
 })
 export class DocumentsComponent implements OnInit, AfterViewInit {
   private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly documentsService = inject(DocumentsService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly element = inject(ElementRef);
-  private readonly images = inject(ImageLoadStatusesService);
   private readonly router = inject(Router);
-  private readonly _pages$: BehaviorSubject<IPageView[] | undefined> = new BehaviorSubject<IPageView[] | undefined>(undefined);
+  private readonly injector = inject(Injector);
+  public readonly store = inject(DocumentsStore);
 
   public buildAnnotationFormParams!: IBuildAnnotationFormParams;
   public activePageId!: string;
 
-  public get pages$(): Observable<IPageView[] | undefined> {
-    return this._pages$.asObservable();
-  }
-
-  constructor() {
-    afterRender(() => {
-      console.log('afterRender DocumentsComponent');
-    })
-  }
-
   public ngOnInit(): void {
-    this.documentsService.getDocuments()
-      .pipe(
-        tap(() => {
-          setTimeout(() => {
-            this.images.updateStatuses();
-            this.updateOffsetForImages();
-          })
-        }),
-      )
-      .subscribe((response: IDocuments): void => {
-        this._pages$.next(
-          response.pages.map((item: IPage): IPageView => ({
-            ...item,
-            scale: 1,
-            annotations: [],
-            offsetLeft: 0,
-          })),
-        );
-      });
+    this.store.loadDocumnets(null);
+
+    watchState(this.store, (state) => {
+      if (state.action === 'loadDocumnets') {
+        afterNextRender(() => {
+          this.store.updateImageStatuses(null);
+        }, { injector: this.injector });
+      }
+
+      if (state.action === 'updateImageStatuses') {
+        afterNextRender(() => {
+          this.updateOffsetForImages();
+        }, { injector: this.injector });
+      }
+
+      if (state.action === 'zoomInPage' || state.action === 'zoomOutPage') {
+        afterNextRender(() => {
+          this.updateOffsetForImages();
+        }, { injector: this.injector });
+      }
+
+      if (state.action === 'updateOffsetForImages') {
+        this.changeDetector.detectChanges();
+      }
+    }, { injector: this.injector });
   }
 
   public ngAfterViewInit(): void {
@@ -97,13 +93,11 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
   }
 
   public zoomIn(document: IPageView): void {
-    document.scale += 0.1;
-    this.updateOffsetForImages();
+    this.store.zoomInPage(document.number);
   }
 
   public zoomOut(document: IPageView): void {
-    document.scale -= 0.1;
-    this.updateOffsetForImages();
+    this.store.zoomOutPage(document.number);
   }
 
   public openAnnotationForm(event: MouseEvent, document: IPageView) {
@@ -113,47 +107,30 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
         y: event.clientY,
       },
       relativeCursorPosition: {
-        x: event.offsetX,
-        y: event.offsetY,
+        x: event.offsetX / document.scale,
+        y: event.offsetY / document.scale,
       },
       documentId: document.number,
     };
   }
 
-  public createAnnotation(value: IAnnotationFormValue): void {
-    const document = this._pages$.value?.find((item) => item.number === value.documentId);
-
-    if (!document) {
-      return;
-    }
-
-    document.annotations.push({
-      position: {
-        x: value.position.x,
-        y: value.position.y,
-      },
-      type: value.type,
-      value: value.value,
-    });
+  public createAnnotation(formValue: IAnnotationFormValue): void {
+    this.store.createAnnotation(
+      formValue.documentId,
+      formValue.position,
+      formValue.type,
+      formValue.value,
+    );
   }
 
   private updateOffsetForImages(): void {
     const $images: HTMLElement[] = this.element.nativeElement.querySelectorAll('img');
-    const pages: IPageView[] = this._pages$.value ?? [];
-
-    if ($images.length !== pages.length) {
-      return;
-    }
+    const pages: IPageView[] = this.store.pages();
 
     for(const [index, $img] of $images.entries()) {
-      setTimeout(() => {
-        console.log('offsetLeft');
-        console.log($img.offsetLeft);
-
-        pages[index].offsetLeft = $img.offsetLeft;
-
-        this._pages$.next(pages);
-      });
+      pages[index].offsetLeft = $img.offsetLeft;
     }
+
+    this.store.updateOffsetForImages(pages);
   }
 }
