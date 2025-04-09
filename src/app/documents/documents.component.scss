@@ -37,5 +37,43 @@
 }
 
 .annotation {
+  display: flex;
   position: absolute;
+
+  &__text {
+    background: orange;
+    padding: 3px 6px;
+    border-radius: 3px;
+  }
+
+  &__icon {
+    max-height: 100px;
+    max-width: 100px;
+  }
+
+  &__delete {
+    background-color: #fff;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAItJREFUSEtjZKAxYKSx+QyDw4JXxsr/sflU7Oxdgg7EUIDLMGKDEt1S+lsAcinMF8QEASH1WMOQ7hagW0iIjxxfRPmAkIH4fDxqATgERoMIIwgIparBl0wJFXQURzLNLCBkMLo8tsIRa05+bqLiwPz//35SLPjLyOgoeebOAXQ9BGskUizBpnboWwAAr3TIGVz/eHYAAAAASUVORK5CYII=);
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    display: none;
+    height: 24px;
+    width: 24px;
+    outline: none;
+  }
+
+  &:hover {
+    .annotation__delete {
+      display: block;
+    }
+  }
+}
+
+.save-btn {
+  cursor: pointer;
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  z-index: 1;
 }

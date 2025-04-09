@@ -20,6 +20,7 @@ export interface IPageView extends IPage {
 }
 
 export interface IAnnotation {
+  id: number;
   position: IAnnotationPosition;
   type: AnnotationType;
   value: string;

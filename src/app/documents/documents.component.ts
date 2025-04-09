@@ -66,7 +66,7 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
       }
 
       if (state.action === 'updateOffsetForImages') {
-        this.changeDetector.detectChanges();
+          this.changeDetector.detectChanges();
       }
     }, { injector: this.injector });
   }
@@ -123,8 +123,19 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
     );
   }
 
+  public deleteAnnotation(
+    pageId: number,
+    annotationId: number,
+  ): void {
+    this.store.deleteAnnotation(pageId, annotationId);
+  }
+
+  public save(): void {
+    console.log(this.store.pages());
+  }
+
   private updateOffsetForImages(): void {
-    const $images: HTMLElement[] = this.element.nativeElement.querySelectorAll('img');
+    const $images: HTMLElement[] = this.element.nativeElement.querySelectorAll('img.document__image');
     const pages: IPageView[] = this.store.pages();
 
     for(const [index, $img] of $images.entries()) {

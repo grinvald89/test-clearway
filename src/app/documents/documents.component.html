@@ -3,6 +3,10 @@
   [buildFormParams]="buildAnnotationFormParams"
 ></app-annotation-form>
 
+<button (click)="save()" class="save-btn">
+  Сохранить
+</button>
+
 @if (!store.loading()) {
   <div
     (appVisiblePage)="changeActivePageId($event)"
@@ -28,9 +32,18 @@
             [style.top]="annotation.position.y * item.scale + 'px'"
             class="annotation"
           >
-            <div class="comment">
-              {{ annotation.value }}
-            </div>
+            @if (annotation.type === 'text') {
+              <div class="annotation__text">
+                {{ annotation.value }}
+              </div>
+            } @else {
+              <img class="annotation__icon" [src]="annotation.value">
+            }
+
+            <button
+              (click)="deleteAnnotation(item.number, annotation.id)"
+              class="annotation__delete"
+            ></button>
           </div>
         }
 

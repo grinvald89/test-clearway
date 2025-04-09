@@ -5,7 +5,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { tapResponse } from '@ngrx/operators';
 
 import { DocumentsService } from '../services';
-import { AnnotationType, IAnnotationPosition, IDocuments, IPage, IPageView } from '../model';
+import { AnnotationType, IAnnotation, IAnnotationPosition, IDocuments, IPage, IPageView } from '../model';
 
 interface IDocumentsState {
   action: string;
@@ -144,6 +144,7 @@ export const DocumentsStore = signalStore(
         }
 
         page.annotations.push({
+          id: Date.now(),
           position: {
             x: position.x,
             y: position.y,
@@ -154,6 +155,30 @@ export const DocumentsStore = signalStore(
 
         return {
           action: 'createAnnotation',
+          pages: state.pages,
+        };
+      });
+    },
+
+    /**
+     * Удалить аннотацию
+     */
+    deleteAnnotation: (
+      pageId: number,
+      annotationId: number,
+    ) => {
+      patchState(store, (state) => {
+        const page = state.pages.find((item) => item.number === pageId);
+
+        if (page === undefined) {
+          return state;
+        }
+
+        page.annotations =
+          page.annotations.filter((item: IAnnotation): boolean => item.id !== annotationId);
+
+        return {
+          action: 'deleteAnnotation',
           pages: state.pages,
         };
       });

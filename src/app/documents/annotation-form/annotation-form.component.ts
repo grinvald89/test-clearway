@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, HostListener, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostBinding, HostListener, inject, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
 
 import { AnnotationType } from '../model';
@@ -46,11 +46,15 @@ export class AnnotationFormComponent {
 
   @HostListener('document:keydown', ['$event'])
   public handleKeyboardEvent(event: KeyboardEvent): void {
-      if (event.key === 'Escape') {
-        this.closeForm();
-      }
+    if (event.key === 'Escape') {
+      this.closeForm();
+    }
   }
-  
+
+  private readonly changeDetector = inject(ChangeDetectorRef);
+
+  private image!: string;
+
   public form: FormGroup = new FormGroup({
     comment: new FormControl('', Validators.required),
     icon: new FormControl(null, Validators.required),
@@ -64,7 +68,7 @@ export class AnnotationFormComponent {
       return true;
     }
 
-    if (this.type === 'icon' && this.form.controls['icon'].invalid) {
+    if (this.type === 'icon' && !this.image) {
       return true;
     }
 
@@ -76,6 +80,8 @@ export class AnnotationFormComponent {
       return;
     }
 
+    const value: string = this.type === 'text' ? this.form.value.comment : this.image;
+
     this.formValue.emit({
       documentId: this._buildFormParams.documentId,
       position: {
@@ -83,10 +89,21 @@ export class AnnotationFormComponent {
         y: this._buildFormParams.relativeCursorPosition.y,
       },
       type: this.type ?? 'text',
-      value: this.form.value.comment,
+      value: value,
     });
 
     this.closeForm();
+  }
+
+  public onIconChange(event: Event): void {
+    const fileReader = new FileReader();
+
+    fileReader.readAsDataURL(((event.target as HTMLInputElement).files as FileList)[0]);
+
+    fileReader.addEventListener('load', () => {
+      this.image = fileReader.result as string;
+      this.changeDetector.detectChanges();
+    })
   }
 
   private openForm(): void {

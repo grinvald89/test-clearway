@@ -1,4 +1,4 @@
-@if (visible) {
+if (visible) {
   @if (!type) {
     <div class="type">
       <div class="type__label">Выберите тип аннотации:</div>
@@ -35,6 +35,7 @@
         />
       } @else {
         <input
+          (change)="onIconChange($event)"
           accept="image/png, image/jpeg"
           formControlName="icon"
           name="icon"
