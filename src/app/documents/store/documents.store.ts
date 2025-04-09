@@ -6,9 +6,10 @@ import { tapResponse } from '@ngrx/operators';
 
 import { DocumentsService } from '../services';
 import { AnnotationType, IAnnotation, IAnnotationPosition, IDocuments, IPage, IPageView } from '../model';
+import { DocumentsActionsType } from './actions.type';
 
 interface IDocumentsState {
-  action: string;
+  action: DocumentsActionsType;
   imagesReady: boolean;
   loading: boolean;
   pages: IPageView[];
@@ -91,7 +92,7 @@ export const DocumentsStore = signalStore(
      * Увеличить страницу
      */
     zoomInPage: (pageId: number) => {
-      patchState(store, (state) => {
+      patchState(store, (state): Partial<IDocumentsState> => {
         const page = state.pages.find((item) => item.number === pageId);
 
         if (page === undefined) {
@@ -111,7 +112,7 @@ export const DocumentsStore = signalStore(
      * Уменьшить страницу
      */
     zoomOutPage: (pageId: number) => {
-      patchState(store, (state) => {
+      patchState(store, (state): Partial<IDocumentsState> => {
         const page = state.pages.find((item) => item.number === pageId);
 
         if (page === undefined) {
@@ -136,7 +137,7 @@ export const DocumentsStore = signalStore(
       type: AnnotationType,
       value: string
     ) => {
-      patchState(store, (state) => {
+      patchState(store, (state): Partial<IDocumentsState> => {
         const page = state.pages.find((item) => item.number === pageId);
 
         if (page === undefined) {
@@ -167,7 +168,7 @@ export const DocumentsStore = signalStore(
       pageId: number,
       annotationId: number,
     ) => {
-      patchState(store, (state) => {
+      patchState(store, (state): Partial<IDocumentsState> => {
         const page = state.pages.find((item) => item.number === pageId);
 
         if (page === undefined) {
@@ -188,7 +189,7 @@ export const DocumentsStore = signalStore(
      * Обновить отступы для картинок
      */
     updateOffsetForImages: (pages: IPageView[]) => {
-      patchState(store, (state) => {
+      patchState(store, (state): Partial<IDocumentsState> => {
         const pagesOrigin = state.pages;
 
         if (pages.length !== pagesOrigin.length) {
