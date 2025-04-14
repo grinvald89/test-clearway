@@ -2,6 +2,8 @@ import { afterNextRender, AfterViewInit, ChangeDetectionStrategy, ChangeDetector
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { watchState } from '@ngrx/signals';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AnnotationFormComponent } from './annotation-form';
 import { DocumentsService } from './services/documents.service';
@@ -26,6 +28,8 @@ import { DocumentsStore } from './store';
     ScaleHeightDirective,
     ScrollIntoPageDirective,
     VisiblePageDirective,
+    MatButtonModule,
+    MatIconModule,
   ],
   providers: [
     DocumentsService,
