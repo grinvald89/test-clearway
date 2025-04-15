@@ -14,18 +14,7 @@ import { ScaleHeightDirective } from './scale-height.directive';
 import { IBuildAnnotationFormParams } from './annotation-form/build-annotation-form-params.interface';
 import { IAnnotationFormValue } from './annotation-form/annotation-form-value.interface';
 import { DocumentsStore } from './store';
-
-interface DragState {
-  annotation: any;
-  page: any;
-  startX: number;
-  startY: number;
-  origX: number;
-  origY: number;
-  scale: number;
-  offsetLeft: number;
-  imageEl: HTMLImageElement | null;
-}
+import { DragAnnotationDirective } from './drag-annotation.directive';
 
 @Component({
   selector: 'app-documents',
@@ -42,6 +31,7 @@ interface DragState {
     VisiblePageDirective,
     MatButtonModule,
     MatIconModule,
+    DragAnnotationDirective,
   ],
   providers: [
     DocumentsService,
@@ -58,8 +48,6 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
 
   public buildAnnotationFormParams!: IBuildAnnotationFormParams;
   public activePageId!: string;
-
-  private dragState: DragState | null = null;
 
   public ngOnInit(): void {
     this.store.loadDocumnets(null);
@@ -163,63 +151,19 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
     this.store.updateOffsetForImages(pages);
   }
 
-  public onAnnotationMouseDown(event: MouseEvent, annotation: any, page: any): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const imageEl = this.getImageElementForPage(page.number);
-    (event.currentTarget as HTMLElement).classList.add('annotation--dragging');
-    this.dragState = {
-      annotation,
-      page,
-      startX: event.clientX,
-      startY: event.clientY,
-      origX: annotation.position.x,
-      origY: annotation.position.y,
-      scale: page.scale,
-      offsetLeft: page.offsetLeft,
-      imageEl,
-    };
-    document.addEventListener('mousemove', this.onAnnotationMouseMove);
-    document.addEventListener('mouseup', this.onAnnotationMouseUp);
+  public onAnnotationMoved(annotation: any, coords: { x: number; y: number }) {
+    annotation.position.x = coords.x;
+    annotation.position.y = coords.y;
+    this.changeDetector.detectChanges();
   }
 
-  private onAnnotationMouseMove = (event: MouseEvent) => {
-    if (!this.dragState) return;
-    const dx = (event.clientX - this.dragState.startX) / this.dragState.scale;
-    const dy = (event.clientY - this.dragState.startY) / this.dragState.scale;
-    let newX = this.dragState.origX + dx;
-    let newY = this.dragState.origY + dy;
-    const imgW = this.getImageWidth(this.dragState.imageEl);
-    const imgH = this.getImageHeight(this.dragState.imageEl);
-    newX = Math.max(0, Math.min(newX, imgW));
-    newY = Math.max(0, Math.min(newY, imgH));
-    this.dragState.annotation.position.x = newX;
-    this.dragState.annotation.position.y = newY;
-    this.changeDetector.detectChanges();
-  };
-
-  private onAnnotationMouseUp = (event: MouseEvent) => {
-    document.removeEventListener('mousemove', this.onAnnotationMouseMove);
-    document.removeEventListener('mouseup', this.onAnnotationMouseUp);
-    if (event.target && (event.target as HTMLElement).classList.contains('annotation')) {
-      (event.target as HTMLElement).classList.remove('annotation--dragging');
-    } else if (this.dragState) {
-      const annotationEls = document.querySelectorAll('.annotation');
-      annotationEls.forEach(el => el.classList.remove('annotation--dragging'));
-    }
-    this.dragState = null;
-  };
-
-  private getImageElementForPage(pageNumber: number): HTMLImageElement | null {
+  public getImageElementForPage(pageNumber: number): HTMLImageElement | null {
     return this.element.nativeElement.querySelector(
       `.document[page-id="${pageNumber}"] .document__image`
     );
   }
 
-  private getImageWidth(imageEl: HTMLImageElement | null): number {
-    return imageEl ? imageEl.naturalWidth : 1000;
-  }
-  private getImageHeight(imageEl: HTMLImageElement | null): number {
-    return imageEl ? imageEl.naturalHeight : 1400;
+  public getImageElForPage(pageNumber: number): () => HTMLImageElement | null {
+    return () => this.getImageElementForPage(pageNumber);
   }
 }

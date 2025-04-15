@@ -28,10 +28,14 @@
 
         @for (annotation of item.annotations; track $index) {
           <div
+            (annotationMoved)="onAnnotationMoved(annotation, $event)"
+            [annotation]="annotation"
+            [getImageEl]="getImageElForPage(item.number)"
+            [page]="item"
             [style.left]="annotation.position.x * item.scale + item.offsetLeft + 'px'"
             [style.top]="annotation.position.y * item.scale + 'px'"
             class="annotation"
-            (mousedown)="onAnnotationMouseDown($event, annotation, item)"
+            appDragAnnotation
           >
             @if (annotation.type === 'text') {
               <div class="annotation__text">
