@@ -63,7 +63,7 @@ export class AnnotationFormComponent {
 
   public image: string | null = null;
   public fileName: string | null = null;
-  public isLoading: boolean = false;
+  public isImageLoading: boolean = false;
 
   public form: FormGroup = new FormGroup({
     comment: new FormControl('', Validators.required),
@@ -110,11 +110,11 @@ export class AnnotationFormComponent {
     if (input.files?.length) {
       const file = input.files[0];
       this.fileName = file.name;
-      this.isLoading = true;
+      this.isImageLoading = true;
       const reader = new FileReader();
       reader.onload = (e) => {
         this.image = e.target?.result as string;
-        this.isLoading = false;
+        this.isImageLoading = false;
         this.changeDetector.detectChanges();
       };
       reader.readAsDataURL(file);

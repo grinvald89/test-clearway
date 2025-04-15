@@ -1,7 +1,9 @@
 @if (visible) {
   @if (!type) {
     <div class="type">
-      <div class="type__label">Выберите тип аннотации:</div>
+      <div class="type__label">
+        Выберите тип аннотации:
+      </div>
       <div class="type__controls">
         <button
           (click)="type = 'text'"
@@ -48,11 +50,11 @@
           }
         </mat-form-field>
         <button
-          mat-raised-button
-          color="accent"
           [disabled]="invalidForm"
-          type="submit"
           class="form__button"
+          color="accent"
+          type="submit"
+          mat-raised-button
         >
           <mat-icon>add</mat-icon>
           Добавить
@@ -68,35 +70,42 @@
             type="file"
             style="display: none"
           />
-          <div class="form__file-container" [class.form__file-container--with-preview]="image || isLoading">
-            @if (isLoading) {
+          <div
+            [class.form__file-container--with-preview]="image || isImageLoading"
+            class="form__file-container"
+          >
+            @if (isImageLoading) {
               <div class="form__image-preview form__image-preview--loading">
                 <div class="form__skeleton"></div>
               </div>
             } @else if (image) {
               <div class="form__image-preview">
-                <img [src]="image" alt="Предпросмотр" class="form__preview-img">
+                <img
+                  [src]="image"
+                  alt="Предпросмотр"
+                  class="form__preview-img"
+                />
               </div>
             }
             
             <div class="form__buttons-container">
               <button
-                mat-raised-button
-                color="primary"
                 (click)="fileInput.click()"
-                type="button"
                 class="form__button"
+                color="primary"
+                type="button"
+                mat-raised-button
               >
                 <mat-icon>upload_file</mat-icon>
                 Выбрать файл
               </button>
               
               <button
-                mat-raised-button
-                color="accent"
                 [disabled]="invalidForm"
-                type="submit"
                 class="form__button"
+                color="accent"
+                type="submit"
+                mat-raised-button
               >
                 <mat-icon>add</mat-icon>
                 Добавить
