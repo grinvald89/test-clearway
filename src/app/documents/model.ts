@@ -19,16 +19,16 @@ export interface IPageView extends IPage {
   annotations: IAnnotation[];
 }
 
-export interface IAnnotation {
-  id: number;
-  position: IAnnotationPosition;
-  type: AnnotationType;
-  value: string;
-}
-
-export interface IAnnotationPosition {
+export interface ICoords {
   x: number;
   y: number;
+}
+
+export interface IAnnotation {
+  id: number;
+  position: ICoords;
+  type: AnnotationType;
+  value: string;
 }
 
 export type AnnotationType = 'text' | 'icon';

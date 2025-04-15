@@ -1,7 +1,7 @@
-import { IAnnotationPosition } from '../model';
+import { ICoords } from '../model';
 
 export interface IBuildAnnotationFormParams {
-  readonly absoluteCursorPosition: IAnnotationPosition;
-  readonly relativeCursorPosition: IAnnotationPosition;
+  readonly absoluteCursorPosition: ICoords;
+  readonly relativeCursorPosition: ICoords;
   readonly documentId: number;
 }

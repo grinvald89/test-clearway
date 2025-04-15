@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { AnnotationFormComponent } from './annotation-form';
 import { DocumentsService } from './services/documents.service';
-import { IPageView } from './model';
+import { IPageView, IAnnotation, ICoords } from './model';
 import { ScrollIntoPageDirective } from './scroll-into-page.directive';
 import { VisiblePageDirective } from './visible-page.directive';
 import { ScaleHeightDirective } from './scale-height.directive';
@@ -151,7 +151,7 @@ export class DocumentsComponent implements OnInit, AfterViewInit {
     this.store.updateOffsetForImages(pages);
   }
 
-  public onAnnotationMoved(annotation: any, coords: { x: number; y: number }) {
+  public onAnnotationMoved(annotation: IAnnotation, coords: ICoords) {
     annotation.position.x = coords.x;
     annotation.position.y = coords.y;
     this.changeDetector.detectChanges();

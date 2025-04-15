@@ -5,7 +5,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { tapResponse } from '@ngrx/operators';
 
 import { DocumentsService } from '../services';
-import { AnnotationType, IAnnotation, IAnnotationPosition, IDocuments, IPage, IPageView } from '../model';
+import { AnnotationType, IAnnotation, ICoords, IDocuments, IPage, IPageView } from '../model';
 import { DocumentsActionsType } from './actions.type';
 
 interface IDocumentsState {
@@ -133,7 +133,7 @@ export const DocumentsStore = signalStore(
      */
     createAnnotation: (
       pageId: number,
-      position: IAnnotationPosition,
+      position: ICoords,
       type: AnnotationType,
       value: string
     ) => {
