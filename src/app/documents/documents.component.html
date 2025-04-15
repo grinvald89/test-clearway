@@ -3,7 +3,7 @@
   [buildFormParams]="buildAnnotationFormParams"
 ></app-annotation-form>
 
-<button (click)="save()" class="save-btn">
+<button mat-raised-button color="primary" (click)="save()" class="save-btn">
   Сохранить
 </button>
 
@@ -48,9 +48,13 @@
         }
 
         <div class="document__zoom-controls">
-          <button (click)="zoomIn(item)"> + </button>
+          <button mat-icon-button color="primary" (click)="zoomIn(item)">
+            <mat-icon>add</mat-icon>
+          </button>
           <span>{{ item.scale * 100 | number:'1.0-0' }}%</span>
-          <button (click)="zoomOut(item)"> - </button>
+          <button mat-icon-button color="primary" (click)="zoomOut(item)">
+            <mat-icon>remove</mat-icon>
+          </button>
         </div>
       </div>
     } @empty {

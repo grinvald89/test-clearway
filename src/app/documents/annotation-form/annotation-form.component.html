@@ -1,19 +1,25 @@
 @if (visible) {
   @if (!type) {
     <div class="type">
-      <div class="type__label">Выберите тип аннотации:</div>
+      <div class="type__label">
+        Выберите тип аннотации:
+      </div>
       <div class="type__controls">
         <button
           (click)="type = 'text'"
-          class="type__button"
+          color="primary"
+          mat-raised-button
         >
+          <mat-icon>comment</mat-icon>
           Текст
         </button>
 
         <button
           (click)="type = 'icon'"
-          class="type__button"
+          color="primary"
+          mat-raised-button
         >
+          <mat-icon>image</mat-icon>
           Картинка
         </button>
       </div>
@@ -27,25 +33,87 @@
       class="form"
     >
       @if (type === 'text') {
-        <input
-          formControlName="comment"
-          name="comment"
-          placeholder="Комментарий"
-          type="text"
-        />
-      } @else {
-        <input
-          (change)="onIconChange($event)"
-          accept="image/png, image/jpeg"
-          formControlName="icon"
-          name="icon"
-          type="file"
-        />
-      }
+        <mat-form-field appearance="outline" class="form__field">
+          <mat-label>Комментарий</mat-label>
+          <textarea
+            formControlName="comment"
+            name="comment"
+            placeholder="Введите комментарий"
+            rows="4"
+            matInput
+          ></textarea>
 
-      <button [disabled]="invalidForm">
-        Добавить
-      </button>
+          @if (form.get('comment')?.hasError('required') && form.get('comment')?.touched) {
+            <mat-error>
+              Поле обязательно для заполнения
+            </mat-error>
+          }
+        </mat-form-field>
+        <button
+          [disabled]="invalidForm"
+          class="form__button"
+          color="accent"
+          type="submit"
+          mat-raised-button
+        >
+          <mat-icon>add</mat-icon>
+          Добавить
+        </button>
+      } @else {
+        <div class="form__file-upload">
+          <input
+            #fileInput
+            (change)="onIconChange($event)"
+            accept="image/png, image/jpeg"
+            formControlName="icon"
+            name="icon"
+            type="file"
+            style="display: none"
+          />
+          <div
+            [class.form__file-container--with-preview]="image || isImageLoading"
+            class="form__file-container"
+          >
+            @if (isImageLoading) {
+              <div class="form__image-preview form__image-preview--loading">
+                <div class="form__skeleton"></div>
+              </div>
+            } @else if (image) {
+              <div class="form__image-preview">
+                <img
+                  [src]="image"
+                  alt="Предпросмотр"
+                  class="form__preview-img"
+                />
+              </div>
+            }
+            
+            <div class="form__buttons-container">
+              <button
+                (click)="fileInput.click()"
+                class="form__button"
+                color="primary"
+                type="button"
+                mat-raised-button
+              >
+                <mat-icon>upload_file</mat-icon>
+                Выбрать файл
+              </button>
+              
+              <button
+                [disabled]="invalidForm"
+                class="form__button"
+                color="accent"
+                type="submit"
+                mat-raised-button
+              >
+                <mat-icon>add</mat-icon>
+                Добавить
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </form>
   }
 }

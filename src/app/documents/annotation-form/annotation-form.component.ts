@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostBinding, HostListener, inject, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AnnotationType } from '../model';
 import { IBuildAnnotationFormParams } from './build-annotation-form-params.interface';
@@ -12,6 +16,10 @@ import { IAnnotationFormValue } from './annotation-form-value.interface';
   imports: [
     FormsModule,
     ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,7 +61,9 @@ export class AnnotationFormComponent {
 
   private readonly changeDetector = inject(ChangeDetectorRef);
 
-  private image!: string;
+  public image: string | null = null;
+  public fileName: string | null = null;
+  public isImageLoading: boolean = false;
 
   public form: FormGroup = new FormGroup({
     comment: new FormControl('', Validators.required),
@@ -96,14 +106,19 @@ export class AnnotationFormComponent {
   }
 
   public onIconChange(event: Event): void {
-    const fileReader = new FileReader();
-
-    fileReader.readAsDataURL(((event.target as HTMLInputElement).files as FileList)[0]);
-
-    fileReader.addEventListener('load', () => {
-      this.image = fileReader.result as string;
-      this.changeDetector.detectChanges();
-    })
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      const file = input.files[0];
+      this.fileName = file.name;
+      this.isImageLoading = true;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.image = e.target?.result as string;
+        this.isImageLoading = false;
+        this.changeDetector.detectChanges();
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   private openForm(): void {
@@ -113,6 +128,15 @@ export class AnnotationFormComponent {
 
   private closeForm(): void {
     this.form.reset();
+    this.fileName = null;
     this.visible = false;
+  }
+
+  public setType(type: 'text' | 'icon'): void {
+    this.type = type;
+    this.form = new FormGroup({
+      comment: new FormControl('', type === 'text' ? Validators.required : null),
+      icon: new FormControl(null, type === 'icon' ? Validators.required : null),
+    });
   }
 }
