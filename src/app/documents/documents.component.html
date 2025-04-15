@@ -31,6 +31,7 @@
             [style.left]="annotation.position.x * item.scale + item.offsetLeft + 'px'"
             [style.top]="annotation.position.y * item.scale + 'px'"
             class="annotation"
+            (mousedown)="onAnnotationMouseDown($event, annotation, item)"
           >
             @if (annotation.type === 'text') {
               <div class="annotation__text">

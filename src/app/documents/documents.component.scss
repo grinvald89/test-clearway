@@ -77,6 +77,14 @@
       display: block;
     }
   }
+
+  &--dragging {
+    z-index: 10;
+    box-shadow: 0 4px 16px 0 rgba(0,0,0,0.25);
+    opacity: 0.8;
+    cursor: grabbing;
+    transition: box-shadow 0.2s, opacity 0.2s;
+  }
 }
 
 .save-btn {
